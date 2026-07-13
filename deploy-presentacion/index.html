@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La persuasión encubierta de las metáforas · Defensa TFG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Source+Serif+4:opsz,wght@8,400;8,500;8,600;8,700&display=swap" rel="stylesheet">
+<style>
+/* ===========================================
+   THEME: PAPER & INK — editorial, literary, thoughtful.
+   Cream field, charcoal ink, single crimson accent reserved
+   for the number/word that matters on each slide.
+   Change palette here to change the whole deck.
+   =========================================== */
+:root{
+    --bg-cream:#faf9f7;
+    --ink:#1a1a1a;
+    --ink-soft:#4a4a46;
+    --crimson:#c41e3a;
+    --rule:#d8d3c8;
+    --sage:#5c7a68;
+    --font-display:'Cormorant Garamond', serif;
+    --font-body:'Source Serif 4', serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+
+/* ===========================================
+   FIXED 16:9 STAGE — mandatory base (viewport-base.css, full contents)
+   =========================================== */
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--stage-bg,#000);}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:var(--stage-bg,#000);}
+.deck-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;background:var(--slide-bg,#fff);}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:block;opacity:0;pointer-events:none;background:var(--slide-bg,#fff);transition:opacity .6s ease;z-index:1;}
+.slide.active{opacity:1;pointer-events:auto;z-index:2;}
+img,video,canvas,svg{max-width:100%;max-height:100%;}
+.deck-controls{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:1000;}
+@page{size:20in 11.25in;margin:0;}
+@media print{
+    html,body{width:1920px;height:auto;overflow:visible;background:#fff;}
+    .deck-viewport{position:static;overflow:visible;background:#fff;}
+    .deck-stage{position:static;width:auto;height:auto;transform:none!important;background:none;}
+    .slide{position:relative;visibility:visible!important;opacity:1!important;pointer-events:auto!important;width:1920px;height:1080px;break-after:page;page-break-after:always;}
+    .slide:last-child{break-after:auto;page-break-after:auto;}
+    .reveal,.fragment,.foot-linked{opacity:1!important;transform:none!important;transition:none!important;}
+    .draw-line{stroke-dashoffset:0!important;transition:none!important;}
+    .draw-dot{opacity:1!important;transition:none!important;}
+    .title-question{opacity:0!important;}
+    .title-answer{opacity:1!important;transform:none!important;}
+    .fragment-blur{filter:none!important;}
+    .word-cascade .w{opacity:1!important;transform:none!important;}
+    .gancho-card .kw::after{opacity:1!important;transform:none!important;}
+    .punch{transform:none!important;}
+    .deck-controls{display:none!important;}
+}
+@media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.2s!important;}
+}
+/* ===========================================
+   BASE SLIDE
+   =========================================== */
+body{background:#000;}
+.deck-stage{background:var(--bg-cream);}
+.slide{background:var(--bg-cream);color:var(--ink);padding:96px 140px;}
+.pageno{position:absolute;right:64px;bottom:44px;font-family:var(--font-body);font-size:18px;color:var(--ink-soft);}
+.eyebrow{font-family:var(--font-body);font-size:24px;letter-spacing:0.16em;text-transform:uppercase;color:var(--crimson);font-weight:600;margin-bottom:20px;}
+
+/* ===========================================
+   REVEAL ANIMATION — staggered fade + rise on slide entry
+   =========================================== */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);}
+.slide.visible .reveal{opacity:1;transform:translateY(0);}
+.reveal:nth-child(1){transition-delay:.08s;}
+.reveal:nth-child(2){transition-delay:.2s;}
+.reveal:nth-child(3){transition-delay:.32s;}
+.reveal:nth-child(4){transition-delay:.44s;}
+.reveal:nth-child(5){transition-delay:.56s;}
+.reveal:nth-child(6){transition-delay:.68s;}
+
+/* ===========================================
+   FRAGMENTS — elementos que se revelan uno por clic
+   (JS controla la clase .shown; no dependen de .reveal)
+   =========================================== */
+.fragment{opacity:0;transform:translateY(24px);transition:opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1);}
+.fragment.shown{opacity:1;transform:translateY(0);}
+/* elemento que se revela junto a un fragment concreto, sin ser
+   su propio paso de clic (lo dispara el JS del fragment) */
+.foot-linked{opacity:0;transform:translateY(24px);transition:opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1);}
+.foot-linked.shown{opacity:1;transform:translateY(0);}
+/* fragmento "incógnito": visible pero desenfocado, se aclara al clic
+   en vez de aparecer de la nada (overrides opacity/transform de .fragment) */
+.fragment-blur{opacity:1;transform:none;filter:blur(18px);transition:filter .8s cubic-bezier(.16,1,.3,1);}
+.fragment-blur.shown{filter:blur(0);}
+
+/* ===========================================
+   SLIDE 1 — PORTADA
+   =========================================== */
+.title-slide{display:flex;flex-direction:column;justify-content:center;padding:0 220px;}
+.kicker{font-family:var(--font-body);font-size:24px;letter-spacing:0.2em;text-transform:uppercase;color:var(--crimson);font-weight:600;margin-bottom:36px;}
+.rule{width:120px;height:2px;background:var(--crimson);margin:36px 0 40px;}
+.title-slide h1{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:88px;line-height:1.12;max-width:1260px;letter-spacing:-0.01em;}
+.subtitle{font-family:var(--font-body);font-size:30px;line-height:1.6;color:var(--ink-soft);max-width:960px;margin-top:34px;}
+.byline{display:flex;align-items:baseline;gap:28px;margin-top:64px;font-family:var(--font-body);}
+.byline .name{font-size:28px;font-weight:600;}
+.byline .context{font-size:24px;color:var(--ink-soft);}
+
+/* ===========================================
+   SLIDE 2 — GANCHO (pull-quote comparison)
+   =========================================== */
+.gancho-slide{display:flex;flex-direction:column;justify-content:center;}
+.gancho-columns{display:flex;gap:80px;}
+.gancho-card{flex:1;position:relative;padding-left:44px;}
+.gancho-card::before{content:'\201C';position:absolute;left:-8px;top:-40px;font-family:var(--font-display);font-size:140px;color:var(--rule);line-height:1;}
+.gancho-card p{font-family:var(--font-display);font-style:italic;font-size:40px;line-height:1.4;color:var(--ink);}
+.gancho-card .kw{font-style:normal;font-weight:700;padding:0 4px;position:relative;display:inline-block;}
+.gancho-card .kw::after{content:'';position:absolute;left:0;right:0;bottom:0.05em;height:0.4em;background:rgba(196,30,58,0.16);z-index:-1;opacity:0;transform:scaleX(0.25);transform-origin:left center;transition:opacity .45s ease, transform .55s cubic-bezier(.16,1,.3,1);}
+.gancho-card .kw.lit::after{opacity:1;transform:scaleX(1);}
+.gancho-foot{margin-top:70px;font-family:var(--font-body);font-size:28px;color:var(--ink-soft);border-top:1px solid var(--rule);padding-top:36px;}
+.gancho-foot strong{color:var(--ink);font-weight:600;}
+
+/* ===========================================
+   SLIDE 3 — PREGUNTA MADRE (statement, max restraint)
+   =========================================== */
+.statement-slide{display:flex;align-items:center;justify-content:center;text-align:center;padding:0 260px;}
+.statement-slide h2{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:72px;line-height:1.32;color:var(--ink);max-width:1500px;}
+.statement-slide h2 em{font-style:italic;color:var(--crimson);}
+.punch{display:inline-block;}
+@keyframes punchIn{0%{transform:scale(1);}40%{transform:scale(1.16);}100%{transform:scale(1);}}
+.punch.hit{animation:punchIn .65s cubic-bezier(.34,1.56,.64,1);}
+
+/* ===========================================
+   SLIDE 4 / SLIDE 11 — THREE COLUMNS (tricolon)
+   =========================================== */
+.tricolon-slide{display:flex;flex-direction:column;justify-content:center;}
+.tricolon-slide h2{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:76px;margin-bottom:96px;}
+.tricolon{display:flex;gap:80px;}
+.tricolon-item{flex:1;padding:44px 8px 0;border-top:3px solid var(--crimson);}
+.tricolon-num{font-family:var(--font-display);font-size:30px;color:var(--crimson);font-weight:600;margin-bottom:26px;display:block;}
+.tricolon-item h3{font-family:var(--font-display);font-style:italic;font-size:48px;font-weight:600;margin-bottom:24px;}
+.tricolon-item p{font-family:var(--font-body);font-size:27px;line-height:1.55;color:var(--ink-soft);}
+.callback-line{margin-top:96px;font-family:var(--font-display);font-style:italic;font-size:38px;color:var(--ink);border-top:1px solid var(--rule);padding-top:48px;max-width:1600px;}
+.callback-line strong{color:var(--crimson);font-weight:600;font-style:normal;}
+
+/* ===========================================
+   SLIDE 5 — MÉTODO: FLOW
+   =========================================== */
+.flow-slide{display:flex;flex-direction:column;justify-content:center;}
+.flow-slide h2{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:76px;margin-bottom:96px;}
+.flow{display:flex;align-items:stretch;gap:0;}
+.flow-step{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:64px 40px;flex:1;text-align:center;box-shadow:0 18px 40px rgba(26,26,26,0.05);}
+.flow-step .n{font-family:var(--font-display);font-style:italic;font-size:32px;color:var(--crimson);font-weight:600;margin-bottom:22px;display:block;}
+.flow-step p{font-family:var(--font-body);font-size:26px;line-height:1.5;color:var(--ink);}
+.flow-arrow{font-family:var(--font-display);font-size:52px;color:var(--rule);padding:0 34px;display:flex;align-items:center;}
+.flow-note{margin-top:80px;font-family:var(--font-body);font-size:28px;color:var(--ink-soft);border-top:1px solid var(--rule);padding-top:40px;}
+.flow-note strong{color:var(--ink);font-weight:600;}
+
+/* ===========================================
+   SLIDE 6 — MÉTODO: PARÁSITO Y SEMILLA (contrast)
+   =========================================== */
+.contrast-slide{display:flex;flex-direction:column;justify-content:center;}
+.contrast-slide h2{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:68px;margin-bottom:96px;max-width:1600px;}
+.contrast-cols{display:flex;gap:110px;}
+.contrast-col{flex:1;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:56px 48px;box-shadow:0 18px 40px rgba(26,26,26,0.05);}
+.contrast-col .label{font-family:var(--font-body);font-size:24px;letter-spacing:0.14em;text-transform:uppercase;font-weight:600;margin-bottom:36px;}
+.contrast-col.dep .label{color:var(--ink-soft);}
+.contrast-col.anx .label{color:var(--crimson);}
+.contrast-col svg{width:100%;height:130px;margin-bottom:36px;overflow:visible;}
+.contrast-col .desc{font-family:var(--font-body);font-size:27px;line-height:1.55;color:var(--ink-soft);}
+.contrast-col .metaphors{margin-top:30px;font-family:var(--font-display);font-style:italic;font-size:36px;color:var(--ink);}
+.draw-line{transition:stroke-dashoffset 3.6s cubic-bezier(.65,0,.35,1);}
+.draw-dot{opacity:0;transition:opacity .4s ease;}
+
+/* ===========================================
+   SLIDE 7 / SLIDE 8 — DATA (bar chart, exhibit style)
+   =========================================== */
+.data-slide{display:flex;flex-direction:column;justify-content:center;}
+.data-slide h2{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:72px;margin-bottom:80px;}
+.chart{display:flex;flex-direction:column;gap:44px;max-width:1640px;}
+.bar-row{display:grid;grid-template-columns:420px 1fr 170px;align-items:center;gap:32px;}
+.bar-label{font-family:var(--font-body);font-size:29px;color:var(--ink);}
+.bar-label.muted{color:var(--ink-soft);}
+.bar-track{height:44px;background:var(--rule);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;width:0;background:var(--ink-soft);transition:width 2s cubic-bezier(.16,1,.3,1);}
+.bar-fill.hi{background:var(--crimson);}
+.bar-fill.dashed{background:repeating-linear-gradient(135deg, var(--ink-soft) 0 10px, transparent 10px 20px);opacity:.55;}
+.bar-val{font-family:var(--font-display);font-size:36px;font-weight:600;text-align:right;}
+.bar-val.hi{color:var(--crimson);}
+.bar-val.muted{color:var(--ink-soft);}
+.data-foot{margin-top:72px;font-family:var(--font-display);font-style:italic;font-size:36px;color:var(--ink);max-width:1400px;}
+.data-foot strong{color:var(--crimson);font-weight:600;font-style:normal;}
+
+/* ===========================================
+   SLIDE 8B — LEAD-IN AL CLÍMAX (shared-element morph)
+   El h2 de aquí y el .climax-eyebrow de la SLIDE 9 comparten
+   data-flip="hallazgo": el JS anima transform+color entre ambos.
+   =========================================== */
+.lead-slide{display:flex;align-items:center;justify-content:center;text-align:center;}
+.lead-slide h2{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:100px;color:var(--ink);}
+
+/* ===========================================
+   SLIDE 9 — PERSUASIÓN ENCUBIERTA (climax)
+   =========================================== */
+.climax-slide{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+.climax-eyebrow{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:66px;color:var(--ink-soft);margin-bottom:48px;transition:color .6s ease;}
+.climax-numbers{display:flex;gap:120px;}
+.climax-num{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:270px;line-height:1;color:var(--crimson);white-space:nowrap;}
+.climax-num .pct{font-size:100px;vertical-align:32px;}
+.climax-cap{font-family:var(--font-body);font-size:26px;color:var(--ink-soft);margin-top:14px;letter-spacing:0.02em;}
+.climax-line{font-family:var(--font-display);font-style:italic;font-size:42px;color:var(--ink);margin-top:64px;max-width:1300px;}
+
+/* ===========================================
+   SLIDE 10 — TITLE SWAP (pregunta -> afirmación)
+   Dos h2 apilados; el JS cruza opacidad/escala entre ambos
+   cuando aparece la barra "con formación" (fragment).
+   =========================================== */
+.title-stack{position:relative;height:190px;margin-bottom:56px;}
+.title-stack h2{position:absolute;bottom:0;left:0;margin:0;}
+.title-question{opacity:1;transform:scale(1);transition:opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1);}
+.title-question.hidden{opacity:0;transform:scale(1.04);}
+.title-answer{font-size:158px;opacity:0;transform:scale(.94);transition:opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1);}
+.title-answer.shown{opacity:1;transform:scale(1);}
+
+/* ===========================================
+   SLIDE 12 — CIERRE (minimal, most whitespace of the deck)
+   =========================================== */
+.cierre-slide{display:flex;flex-direction:column;justify-content:center;padding:0 260px;}
+.cierre-slide p{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:88px;line-height:1.35;color:var(--ink);max-width:1500px;}
+.cierre-slide p.q2{margin-top:36px;color:var(--crimson);}
+.word-cascade .w{display:inline-block;opacity:0;transform:translateY(18px);transition:opacity .55s cubic-bezier(.16,1,.3,1), transform .55s cubic-bezier(.16,1,.3,1);}
+.slide.visible .word-cascade .w{opacity:1;transform:translateY(0);}
+.word-cascade .w:nth-child(1){transition-delay:.1s;}
+.word-cascade .w:nth-child(2){transition-delay:.22s;}
+.word-cascade .w:nth-child(3){transition-delay:.34s;}
+.word-cascade .w:nth-child(4){transition-delay:.46s;}
+.word-cascade .w:nth-child(5){transition-delay:.58s;}
+.cierre-final{font-size:108px;color:var(--crimson);}
+
+/* ===========================================
+   SLIDE 13 — GRACIAS (symmetric with portada)
+   =========================================== */
+.thanks-slide{display:flex;align-items:center;justify-content:center;}
+.thanks-slide h2{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:96px;color:var(--ink);}
+
+/* ===========================================
+   DECK CONTROLS
+   =========================================== */
+.deck-controls{display:none;gap:14px;align-items:center;font-family:var(--font-body);}
+
+/* ===========================================
+   PROGRESS RAIL — barra gruesa a todo lo ancho, pegada
+   al borde inferior. El relleno es un degradado que se
+   aclara hacia la punta, más una punta luminosa (blur)
+   que avanza con ella, como un fluido incandescente.
+   =========================================== */
+.progress-rail{position:absolute;left:0;right:0;bottom:0;height:7px;background:rgba(26,26,26,.08);z-index:50;pointer-events:none;overflow:visible;}
+.progress-fill{position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg, #8a1524 0%, var(--crimson) 58%, #ff6478 100%);transition:width .7s cubic-bezier(.16,1,.3,1);}
+.progress-fill::after{content:'';position:absolute;right:-4px;top:50%;width:20px;height:20px;border-radius:50%;background:#ffb0ba;transform:translateY(-50%);filter:blur(7px);opacity:.85;}
+@media print{.progress-rail{display:none;}}
+.deck-controls button{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,0.3);background:rgba(20,20,20,0.72);color:#fff;font-size:19px;cursor:pointer;}
+.deck-controls button:hover{background:var(--crimson);border-color:var(--crimson);}
+.deck-controls .count{color:#fff;font-size:15px;background:rgba(20,20,20,0.72);padding:7px 16px;border-radius:20px;}
+
+/* ===========================================
+   INLINE EDITING (hidden by default; hover top-left or press E)
+   =========================================== */
+.edit-hotzone{position:fixed;top:0;left:0;width:80px;height:80px;z-index:10000;cursor:pointer;}
+.edit-toggle{position:fixed;top:16px;left:16px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(20,20,20,.75);color:#fff;font-size:16px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:10001;}
+.edit-toggle.show,.edit-toggle.active{opacity:1;pointer-events:auto;}
+.edit-toggle.active{background:var(--crimson);}
+[contenteditable="true"]{outline:1.5px dashed var(--crimson);outline-offset:4px;cursor:text;}
+.save-toast{position:fixed;top:16px;left:66px;font-family:var(--font-body);font-size:13px;color:#fff;background:rgba(20,20,20,.75);padding:8px 14px;border-radius:16px;opacity:0;transition:opacity .3s ease;z-index:10001;pointer-events:none;}
+.save-toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+    <main class="deck-stage" id="deckStage">
+
+        <!-- ============================================================
+             SLIDE 1 — PORTADA
+             SPEAKER NOTES: no se lee, diapositiva de fondo mientras te presentan.
+             ============================================================ -->
+        <section class="slide active visible title-slide">
+            <p class="kicker reveal">Trabajo Fin de Grado · Psicología · Universidad de Sevilla</p>
+            <div class="reveal rule"></div>
+            <h1 class="reveal">La persuasión encubierta<br>de las metáforas</h1>
+            <p class="subtitle reveal">Un estudio experimental sobre la percepción<br>de los trastornos mentales y los marcadores psicolingüísticos que delatan su efecto.</p>
+            <div class="byline reveal">
+                <span class="name">Miguel Noguer Escudero</span>
+                <span class="context">Mercedes Cubero Pérez · Samuel Arias Sánchez</span>
+            </div>
+            <span class="pageno">01</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 2 — GANCHO
+             ============================================================ -->
+        <section class="slide gancho-slide">
+            <p class="eyebrow reveal">El mismo texto. Una palabra distinta.</p>
+            <div class="gancho-columns">
+                <div class="gancho-card reveal">
+                    <p>A Marcos le acaban de diagnosticar depresión. Sabe que cada día será <span class="kw">una batalla</span> contra la enfermedad.</p>
+                </div>
+                <div class="gancho-card reveal">
+                    <p>A Marcos le acaban de diagnosticar depresión. Sabe que cada día será <span class="kw">un viaje</span> con la enfermedad.</p>
+                </div>
+            </div>
+            <p class="gancho-foot reveal">Se lo dimos a <strong>167 personas.</strong> Cambió la culpa, el juicio social esperado, y si buscarían ayuda o se callarían.</p>
+            <span class="pageno">02</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 3 — PREGUNTA MADRE
+             ============================================================ -->
+        <section class="slide statement-slide">
+            <h2 class="reveal">Si el lenguaje cambia cómo vemos un trastorno mental, <em>¿por qué lo seguimos usando <span class="punch">sin pensar</span>?</em></h2>
+            <span class="pageno">03</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 4 — OBJETIVOS
+             SPEAKER NOTES: los tres objetivos se revelan uno por clic
+             (fragments); solo al mostrar el tercero, el siguiente clic
+             avanza de diapositiva.
+             ============================================================ -->
+        <section class="slide tricolon-slide">
+            <h2 class="reveal">Tres objetivos</h2>
+            <div class="tricolon">
+                <div class="tricolon-item fragment fragment-blur">
+                    <span class="tricolon-num">01</span>
+                    <h3>Replicar</h3>
+                    <p>¿Se sostiene el efecto de Hendricks en español, con la depresión?</p>
+                </div>
+                <div class="tricolon-item fragment fragment-blur">
+                    <span class="tricolon-num">02</span>
+                    <h3>Extender</h3>
+                    <p>¿Funciona igual con ansiedad?</p>
+                </div>
+                <div class="tricolon-item fragment fragment-blur">
+                    <span class="tricolon-num">03</span>
+                    <h3>Destapar</h3>
+                    <p>¿Podemos demostrarlo con las palabras de la propia gente que participó?</p>
+                </div>
+            </div>
+            <span class="pageno">04</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 5 — MÉTODO: FLUJO
+             ============================================================ -->
+        <section class="slide flow-slide">
+            <p class="eyebrow reveal">Método</p>
+            <h2 class="reveal">167 personas, dos historias</h2>
+            <div class="flow reveal">
+                <div class="flow-step"><span class="n">167 personas</span><p>Leyeron a Marcos (depresión) y a Laura (ansiedad)</p></div>
+                <span class="flow-arrow">&rarr;</span>
+                <div class="flow-step"><span class="n">5 preguntas</span><p>Culpa, aceptación, control, apoyo, juicio social</p></div>
+                <span class="flow-arrow">&rarr;</span>
+                <div class="flow-step"><span class="n">1 pregunta abierta</span><p>&ldquo;¿Por qué has respondido así?&rdquo;</p></div>
+            </div>
+            <span class="pageno">05</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 6 — MÉTODO: POR QUÉ PARÁSITO Y SEMILLA
+             SPEAKER NOTES: las líneas se dibujan progresivamente
+             (stroke-dashoffset) al entrar en la diapositiva.
+             ============================================================ -->
+        <section class="slide contrast-slide">
+            <p class="eyebrow reveal">Método</p>
+            <h2 class="reveal">¿Por qué no repetir batalla y viaje en ansiedad?</h2>
+            <div class="contrast-cols">
+                <div class="contrast-col dep reveal">
+                    <p class="label">Depresión</p>
+                    <svg viewBox="0 0 400 90" preserveAspectRatio="none">
+                        <line class="draw-line" x1="10" y1="45" x2="390" y2="45" stroke="#4a4a46" stroke-width="3" stroke-dasharray="400" stroke-dashoffset="400"/>
+                        <circle class="draw-dot dot-start" cx="10" cy="45" r="7" fill="#4a4a46"/>
+                        <circle class="draw-dot dot-end" cx="390" cy="45" r="7" fill="#4a4a46"/>
+                    </svg>
+                    <p class="desc">Principio, tratamiento, final. Un desenlace claro.</p>
+                    <p class="metaphors">batalla / viaje</p>
+                </div>
+                <div class="contrast-col anx reveal">
+                    <p class="label">Ansiedad</p>
+                    <svg viewBox="0 0 400 90" preserveAspectRatio="none">
+                        <polyline class="draw-line" points="10,45 70,20 130,65 190,25 250,60 310,30 390,45" fill="none" stroke="#c41e3a" stroke-width="3" stroke-dasharray="450" stroke-dashoffset="450"/>
+                        <circle class="draw-dot dot-start" cx="10" cy="45" r="7" fill="#c41e3a"/>
+                    </svg>
+                    <p class="desc">Crónica, fluctuante. Sin final marcado.</p>
+                    <p class="metaphors">parásito / semilla</p>
+                </div>
+            </div>
+            <p class="flow-note reveal"><strong>Par</strong> → batalla + parásito (n=70) · <strong>Impar</strong> → viaje + semilla (n=97)</p>
+            <span class="pageno">06</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 7 — RESULTADOS: DEPRESIÓN
+             SPEAKER NOTES: las barras crecen desde 0 hasta su valor
+             (transición de width) al entrar en la diapositiva.
+             ============================================================ -->
+        <section class="slide data-slide">
+            <p class="eyebrow reveal">Resultados · depresión</p>
+            <h2 class="reveal">Las cinco hipótesis se cumplieron.</h2>
+            <div class="chart reveal">
+                <div class="bar-row">
+                    <span class="bar-label">Juicio social</span>
+                    <div class="bar-track"><div class="bar-fill hi" data-width="100%"></div></div>
+                    <span class="bar-val hi">d = 0,82</span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label">Culpa interna</span>
+                    <div class="bar-track"><div class="bar-fill" data-width="80%"></div></div>
+                    <span class="bar-val">d = 0,66</span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label">Búsqueda de apoyo</span>
+                    <div class="bar-track"><div class="bar-fill" data-width="76%"></div></div>
+                    <span class="bar-val">d = 0,62</span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label">Control percibido</span>
+                    <div class="bar-track"><div class="bar-fill" data-width="55%"></div></div>
+                    <span class="bar-val">d = 0,45</span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label">Aceptación</span>
+                    <div class="bar-track"><div class="bar-fill" data-width="44%"></div></div>
+                    <span class="bar-val">d = 0,36</span>
+                </div>
+            </div>
+            <p class="data-foot reveal" style="font-size:44px;">Todas significativas.</p>
+            <span class="pageno">07</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 8 — RESULTADOS: ANSIEDAD, LA PARADOJA
+             ============================================================ -->
+        <section class="slide data-slide">
+            <p class="eyebrow reveal">Resultados · ansiedad</p>
+            <h2 class="reveal">Tres de cinco. ¿Por qué?</h2>
+            <div class="chart reveal">
+                <div class="bar-row">
+                    <span class="bar-label">Control percibido</span>
+                    <div class="bar-track"><div class="bar-fill hi" data-width="100%"></div></div>
+                    <span class="bar-val hi">d = 0,52</span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label">Aceptación</span>
+                    <div class="bar-track"><div class="bar-fill hi" data-width="73%"></div></div>
+                    <span class="bar-val hi">d = 0,38</span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label">Búsqueda de apoyo</span>
+                    <div class="bar-track"><div class="bar-fill hi" data-width="65%"></div></div>
+                    <span class="bar-val hi">d = 0,34</span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label muted">Culpa interna</span>
+                    <div class="bar-track"><div class="bar-fill dashed" data-width="52%"></div></div>
+                    <span class="bar-val muted">d = 0,27 <em>ns</em></span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label muted">Juicio social</span>
+                    <div class="bar-track"><div class="bar-fill dashed" data-width="33%"></div></div>
+                    <span class="bar-val muted">d = 0,17 <em>ns</em></span>
+                </div>
+            </div>
+            <p class="data-foot reveal">La semilla: dos lecturas, canceladas entre sí.</p>
+            <span class="pageno">08</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 8B — LEAD-IN AL CLÍMAX
+             SPEAKER NOTES: es solo el arranque de la frase con la que se
+             introduce el hallazgo central; el texto migra a la SLIDE 9
+             como su climax-eyebrow (transición shared-element).
+             ============================================================ -->
+        <section class="slide lead-slide">
+            <h2 class="reveal" data-flip="hallazgo">El hallazgo central</h2>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 9 — PERSUASIÓN ENCUBIERTA (clímax del mazo)
+             SPEAKER NOTES: bloque "El hallazgo central: persuasión
+             encubierta" completo, incluyendo el dato de los verbos
+             cognitivos ("pararte a pensar en voz alta parece proteger").
+             ============================================================ -->
+        <section class="slide climax-slide">
+            <p class="climax-eyebrow" data-flip="hallazgo">El hallazgo central</p>
+            <div class="climax-numbers">
+                <div class="reveal">
+                    <div class="climax-num">96,4<span class="pct">%</span></div>
+                    <p class="climax-cap">depresión</p>
+                </div>
+                <div class="reveal">
+                    <div class="climax-num">98,2<span class="pct">%</span></div>
+                    <p class="climax-cap">ansiedad</p>
+                </div>
+            </div>
+            <p class="climax-line reveal">No consideraron la metáfora como influyente en sus respuestas.</p>
+            <span class="pageno">09</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 10 — QUIÉN RESISTE: FORMACIÓN EN PSICOLOGÍA
+             ============================================================ -->
+        <section class="slide data-slide">
+            <p class="eyebrow reveal">Quién se libra y quién no</p>
+            <div class="title-stack reveal">
+                <h2 class="title-question" id="formacion-question">¿La formación protege?</h2>
+                <h2 class="title-answer" id="formacion-answer">La formación NO protege</h2>
+            </div>
+            <div class="chart reveal">
+                <div class="bar-row">
+                    <span class="bar-label">Sin formación (n = 131)</span>
+                    <div class="bar-track"><div class="bar-fill" data-width="52%"></div></div>
+                    <span class="bar-val">d = 0,57</span>
+                </div>
+                <div class="bar-row fragment" id="formacion-bar-row">
+                    <span class="bar-label">Con formación (n = 36)</span>
+                    <div class="bar-track"><div class="bar-fill hi" data-width="100%"></div></div>
+                    <span class="bar-val hi">d = 1,10</span>
+                </div>
+            </div>
+            <p class="data-foot foot-linked" id="formacion-foot">Culpa interna, depresión.</p>
+            <span class="pageno">10</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 11 — POR QUÉ IMPORTA + CALLBACK
+             ============================================================ -->
+        <section class="slide tricolon-slide">
+            <p class="eyebrow reveal">Por qué importa</p>
+            <h2 class="reveal">No es un detalle de estilo</h2>
+            <div class="tricolon">
+                <div class="tricolon-item reveal">
+                    <span class="tricolon-num">01</span>
+                    <h3>Clínica</h3>
+                    <p>Cómo describe un diagnóstico un profesional.</p>
+                </div>
+                <div class="tricolon-item reveal">
+                    <span class="tricolon-num">02</span>
+                    <h3>Campañas</h3>
+                    <p>Cómo lo titula un medio de comunicación.</p>
+                </div>
+                <div class="tricolon-item reveal">
+                    <span class="tricolon-num">03</span>
+                    <h3>Formación</h3>
+                    <p>Cómo se enseña a describirlo en la universidad.</p>
+                </div>
+            </div>
+            <p class="callback-line reveal"><strong>El 96%</strong> no lo notaron.</p>
+            <span class="pageno">11</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 12A — CIERRE: LEAD (palabra a palabra)
+             ============================================================ -->
+        <section class="slide cierre-slide">
+            <p class="word-cascade" data-flip="cierre" id="marcos-laura-line"><span class="w">Marcos</span> <span class="w">y</span> <span class="w">Laura</span> <span class="w">no</span> <span class="w">existen.</span></p>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 12B — CIERRE: FINAL
+             SPEAKER NOTES: "Las palabras, sí" migra desde la frase
+             anterior con la misma transición shared-element de la
+             SLIDE 9 (data-flip="cierre").
+             ============================================================ -->
+        <section class="slide cierre-slide">
+            <p class="cierre-final" data-flip="cierre">Las palabras, sí.</p>
+            <span class="pageno">12</span>
+        </section>
+
+        <!-- ============================================================
+             SLIDE 13 — GRACIAS
+             ============================================================ -->
+        <section class="slide thanks-slide">
+            <h2 class="reveal">Gracias</h2>
+        </section>
+
+        <div class="progress-rail">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </main>
+</div>
+
+<div class="deck-controls">
+    <button id="prevBtn" title="Anterior">&lsaquo;</button>
+    <span class="count" id="count">1 / 13</span>
+    <button id="nextBtn" title="Siguiente">&rsaquo;</button>
+</div>
+
+<!-- Inline editing affordance: hover top-left corner or press E -->
+<div class="edit-hotzone" id="editHotzone"></div>
+<button class="edit-toggle" id="editToggle" title="Modo edición (E)">&#9998;</button>
+<div class="save-toast" id="saveToast">Guardado</div>
+
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   Keyboard: arrows / space / page up-down. Touch: swipe.
+   Fragments: dentro de una diapositiva con .fragment, next()
+   revela un fragmento por clic antes de avanzar de diapositiva.
+   =========================================== */
+class SlidePresentation{
+    constructor(){
+        this.slides=document.querySelectorAll('.slide');
+        this.current=-1;
+        this.fragments=[];
+        this.fragmentIndex=0;
+        this.stage=document.getElementById('deckStage');
+        this.countEl=document.getElementById('count');
+        this.setupStageScale();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.show(0);
+    }
+    setupStageScale(){
+        const scale=()=>{
+            const f=Math.min(window.innerWidth/1920, window.innerHeight/1080);
+            const x=(window.innerWidth-1920*f)/2, y=(window.innerHeight-1080*f)/2;
+            this.stage.style.transform=`translate(${x}px,${y}px) scale(${f})`;
+        };
+        scale();
+        window.addEventListener('resize', scale);
+    }
+    setupKeyboardNav(){
+        document.getElementById('prevBtn').addEventListener('click',()=>this.prev());
+        document.getElementById('nextBtn').addEventListener('click',()=>this.next());
+        window.addEventListener('keydown',(e)=>{
+            if(e.target.getAttribute('contenteditable')==='true') return;
+            if(['ArrowRight',' ','PageDown'].includes(e.key)){e.preventDefault();this.next();}
+            if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();this.prev();}
+        });
+    }
+    setupTouchNav(){
+        let touchX=null;
+        window.addEventListener('touchstart',(e)=>{touchX=e.touches[0].clientX;});
+        window.addEventListener('touchend',(e)=>{
+            if(touchX===null) return;
+            const dx=e.changedTouches[0].clientX-touchX;
+            if(dx>60) this.prev();
+            if(dx<-60) this.next();
+            touchX=null;
+        });
+    }
+    next(){
+        if(this.fragmentIndex < this.fragments.length){
+            const frag=this.fragments[this.fragmentIndex];
+            frag.classList.add('shown');
+            this.fragmentIndex++;
+            this.onFragmentShown(frag);
+            return;
+        }
+        this.show(this.current+1);
+    }
+    onFragmentShown(frag){
+        const bars=frag.matches('.bar-fill[data-width]') ? [frag] : Array.from(frag.querySelectorAll('.bar-fill[data-width]'));
+        setTimeout(()=>{ bars.forEach(el=>{ el.style.width=el.dataset.width; }); }, 60);
+        if(frag.id==='formacion-bar-row'){
+            const q=document.getElementById('formacion-question');
+            const a=document.getElementById('formacion-answer');
+            const foot=document.getElementById('formacion-foot');
+            if(q) q.classList.add('hidden');
+            if(a) a.classList.add('shown');
+            if(foot) foot.classList.add('shown');
+        }
+    }
+    prev(){
+        if(this.fragmentIndex > 0){
+            this.fragmentIndex--;
+            this.fragments[this.fragmentIndex].classList.remove('shown');
+            return;
+        }
+        this.show(this.current-1);
+    }
+    show(i){
+        const prevIndex=this.current;
+        this.current=Math.max(0, Math.min(i, this.slides.length-1));
+        if(this.current===prevIndex) return;
+
+        const fromSlide=this.slides[prevIndex] || null;
+        const toSlide=this.slides[this.current];
+        const fromFlip=fromSlide ? fromSlide.querySelector('[data-flip]') : null;
+        const toFlip=toSlide.querySelector('[data-flip]');
+        const doFlip = fromFlip && toFlip && fromFlip.dataset.flip===toFlip.dataset.flip;
+        let firstRect=null, firstColor=null;
+        if(doFlip){
+            firstRect=fromFlip.getBoundingClientRect();
+            firstColor=getComputedStyle(fromFlip).color;
+        }
+
+        this.slides.forEach((s,idx)=>{
+            s.classList.toggle('active', idx===this.current);
+            s.classList.toggle('visible', idx===this.current);
+        });
+        this.countEl.textContent=`${this.current+1} / ${this.slides.length}`;
+        const pct=((this.current+1)/this.slides.length*100)+'%';
+        const fillEl=document.getElementById('progressFill');
+        if(fillEl) fillEl.style.width=pct;
+
+        if(fromSlide) this.resetExtras(fromSlide);
+        this.fragments=Array.from(toSlide.querySelectorAll('.fragment'));
+        this.fragments.forEach(f=>f.classList.remove('shown'));
+        this.fragmentIndex=0;
+        this.growExtras(toSlide);
+
+        if(doFlip){
+            this.runFlip(toFlip, firstRect, firstColor, toSlide);
+        }
+    }
+    growExtras(slide){
+        const bars=Array.from(slide.querySelectorAll('.bar-fill[data-width]')).filter(el=>!el.closest('.fragment'));
+        const lines=slide.querySelectorAll('.draw-line');
+        const startDots=slide.querySelectorAll('.dot-start');
+        const endDots=slide.querySelectorAll('.dot-end');
+        setTimeout(()=>{
+            bars.forEach(el=>{ el.style.width=el.dataset.width; });
+            startDots.forEach(el=>{ el.style.opacity='1'; });
+            lines.forEach(el=>{ el.style.strokeDashoffset='0'; });
+        }, 380);
+        setTimeout(()=>{
+            endDots.forEach(el=>{ el.style.opacity='1'; });
+        }, 380+3600);
+
+        const kws=slide.querySelectorAll('.kw');
+        kws.forEach((el,idx)=>{
+            setTimeout(()=>{ el.classList.add('lit'); }, 900+idx*550);
+        });
+
+        const punches=slide.querySelectorAll('.punch');
+        punches.forEach(el=>{
+            setTimeout(()=>{ el.classList.add('hit'); }, 900);
+        });
+    }
+    resetExtras(slide){
+        const bars=slide.querySelectorAll('.bar-fill[data-width]');
+        const lines=slide.querySelectorAll('.draw-line');
+        const dots=slide.querySelectorAll('.draw-dot');
+        bars.forEach(el=>{ el.style.transition='none'; el.style.width='0'; el.getBoundingClientRect(); el.style.transition=''; });
+        lines.forEach(el=>{
+            const len=el.getAttribute('stroke-dasharray');
+            el.style.transition='none'; el.style.strokeDashoffset=len; el.getBoundingClientRect(); el.style.transition='';
+        });
+        dots.forEach(el=>{ el.style.transition='none'; el.style.opacity='0'; el.getBoundingClientRect(); el.style.transition=''; });
+        const answers=slide.querySelectorAll('.title-answer');
+        const questions=slide.querySelectorAll('.title-question');
+        const feet=slide.querySelectorAll('.foot-linked');
+        answers.forEach(el=>{ el.style.transition='none'; el.classList.remove('shown'); el.getBoundingClientRect(); el.style.transition=''; });
+        questions.forEach(el=>{ el.style.transition='none'; el.classList.remove('hidden'); el.getBoundingClientRect(); el.style.transition=''; });
+        feet.forEach(el=>{ el.style.transition='none'; el.classList.remove('shown'); el.getBoundingClientRect(); el.style.transition=''; });
+        slide.querySelectorAll('.kw.lit').forEach(el=>{ el.style.transition='none'; el.classList.remove('lit'); el.getBoundingClientRect(); el.style.transition=''; });
+        slide.querySelectorAll('.punch.hit').forEach(el=>{ el.classList.remove('hit'); });
+    }
+    runFlip(toFlip, firstRect, firstColor, toSlide){
+        const lastRect=toFlip.getBoundingClientRect();
+        const dx=firstRect.left-lastRect.left;
+        const dy=firstRect.top-lastRect.top;
+        const sx=firstRect.width/lastRect.width;
+        const sy=firstRect.height/lastRect.height;
+
+        toFlip.style.transformOrigin='top left';
+        toFlip.style.transition='none';
+        toFlip.style.transform=`translate(${dx}px,${dy}px) scale(${sx},${sy})`;
+        toFlip.style.color=firstColor;
+        toFlip.getBoundingClientRect(); /* fuerza reflow antes de animar */
+
+        const others=toSlide.querySelectorAll('.reveal');
+        others.forEach(el=>{ el.style.transitionDelay='.45s'; });
+
+        requestAnimationFrame(()=>{
+            toFlip.style.transition='transform .7s cubic-bezier(.16,1,.3,1), color .7s ease';
+            toFlip.style.transform='translate(0,0) scale(1,1)';
+            toFlip.style.color='';
+        });
+
+        clearTimeout(this._flipCleanup);
+        this._flipCleanup=setTimeout(()=>{
+            others.forEach(el=>{ el.style.transitionDelay=''; });
+            toFlip.style.transition='';
+            toFlip.style.transformOrigin='';
+        }, 900);
+    }
+}
+const presentation = new SlidePresentation();
+
+/* ===========================================
+   IMPRESIÓN / PDF — como no hay clics durante una exportación
+   automática, se fija cada elemento animado a su estado final
+   justo antes de imprimir (dispara con window.print() y también
+   con --print-to-pdf en Chrome headless).
+   =========================================== */
+window.addEventListener('beforeprint', ()=>{
+    document.querySelectorAll('.bar-fill[data-width]').forEach(el=>{
+        el.style.transition='none';
+        el.style.width=el.dataset.width;
+    });
+});
+
+/* ===========================================
+   INLINE EDITING — hover hotzone (400ms grace) + E key.
+   Editable text nodes are saved to localStorage keyed by page path,
+   so edits persist across reloads of this same file.
+   =========================================== */
+class InlineEditor{
+    constructor(){
+        this.isActive=false;
+        this.storageKey='tfg-defensa-slides-edits';
+        this.toggle=document.getElementById('editToggle');
+        this.hotzone=document.getElementById('editHotzone');
+        this.toast=document.getElementById('saveToast');
+        this.editableSelector='.slide h1, .slide h2, .slide h3, .slide p, .slide span.name, .slide span.context';
+        this.loadEdits();
+        this.bind();
+    }
+    bind(){
+        let hideTimeout=null;
+        const reveal=()=>{clearTimeout(hideTimeout);this.toggle.classList.add('show');};
+        const scheduleHide=()=>{hideTimeout=setTimeout(()=>{if(!this.isActive)this.toggle.classList.remove('show');},400);};
+        this.hotzone.addEventListener('mouseenter', reveal);
+        this.hotzone.addEventListener('mouseleave', scheduleHide);
+        this.toggle.addEventListener('mouseenter', reveal);
+        this.toggle.addEventListener('mouseleave', scheduleHide);
+        this.hotzone.addEventListener('click', ()=>this.toggleEditMode());
+        this.toggle.addEventListener('click', ()=>this.toggleEditMode());
+        document.addEventListener('keydown',(e)=>{
+            if((e.key==='e'||e.key==='E') && !(e.target.getAttribute && e.target.getAttribute('contenteditable'))){
+                this.toggleEditMode();
+            }
+            if((e.key==='s'||e.key==='S') && (e.ctrlKey||e.metaKey) && this.isActive){
+                e.preventDefault();
+                this.saveEdits();
+            }
+        });
+    }
+    toggleEditMode(){
+        this.isActive=!this.isActive;
+        this.toggle.classList.toggle('active', this.isActive);
+        document.querySelectorAll(this.editableSelector).forEach(el=>{
+            el.setAttribute('contenteditable', this.isActive ? 'true' : 'false');
+        });
+        if(!this.isActive) this.saveEdits();
+    }
+    saveEdits(){
+        const data={};
+        document.querySelectorAll(this.editableSelector).forEach((el,i)=>{
+            data[i]=el.innerHTML;
+        });
+        localStorage.setItem(this.storageKey, JSON.stringify(data));
+        this.toast.classList.add('show');
+        setTimeout(()=>this.toast.classList.remove('show'), 1200);
+    }
+    loadEdits(){
+        const raw=localStorage.getItem(this.storageKey);
+        if(!raw) return;
+        try{
+            const data=JSON.parse(raw);
+            document.querySelectorAll(this.editableSelector).forEach((el,i)=>{
+                if(data[i]!==undefined) el.innerHTML=data[i];
+            });
+        }catch(e){/* ignore malformed storage */}
+    }
+}
+new InlineEditor();
+</script>
+</body>
+</html>
